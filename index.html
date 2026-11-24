@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ужин на сегодня · Дружба Парк</title>
+<meta name="description" content="Нажмите кнопку — и рулетка подберёт ужин в фудхолле «Дружба Парк».">
+<meta property="og:title" content="Что на ужин? Крутите рулетку">
+<meta property="og:description" content="Рулетка фудхолла «Дружба Парк» подберёт ужин на сегодня.">
+<meta name="theme-color" content="#0B0907">
+<link rel="icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0907; --ink: #FFF3E3; --dim: rgba(255,243,227,.62); --line: rgba(255,243,227,.16);
+    --or: #EE7F31; --or2: #F2954F; --dark: #160c04; --card: #17110c;
+  }
+  * { margin: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body { min-height: 100svh; background:
+      radial-gradient(700px 520px at 85% -8%, rgba(238,127,49,.24), rgba(238,127,49,0) 70%),
+      radial-gradient(600px 500px at -10% 105%, rgba(255,243,227,.05), rgba(255,243,227,0) 70%), var(--bg);
+    color: var(--ink); font: 17px/1.4 "Helvetica Neue", Arial, system-ui, sans-serif; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: 22px 16px 40px; display: flex; flex-direction: column; gap: 22px; }
+  header { display: flex; align-items: center; justify-content: space-between; }
+  header img { width: 112px; height: auto; display: block; }
+  .tag { background: var(--or); color: var(--dark); font-weight: 700; font-size: 15px; padding: 5px 12px 6px;
+    transform: rotate(-2.5deg); clip-path: polygon(0 8%, 3% 0, 99% 3%, 100% 44%, 98.6% 100%, 1% 96%); }
+  h1 { font: 700 clamp(44px, 13vw, 64px)/.92 "Oswald", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.01em; text-transform: uppercase; }
+  h1 span { color: var(--or2); }
+  .lead { color: var(--dim); font-size: 17px; margin-top: -8px; }
+
+  .moods { display: flex; flex-wrap: wrap; gap: 8px; }
+  .moods button { font: 600 15px/1 inherit; font-family: inherit; color: var(--ink); background: transparent; border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 10px 14px; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+  .moods button[aria-pressed="true"] { background: var(--ink); color: var(--dark); border-color: var(--ink); }
+  .moods button:focus-visible, .spin:focus-visible, .ghost:focus-visible { outline: 3px solid var(--or2); outline-offset: 3px; }
+
+  /* барабан */
+  .reel { position: relative; height: 96px; border-radius: 22px; background: var(--card); border: 1.5px solid var(--line); overflow: hidden; }
+  .reel::before, .reel::after { content: ""; position: absolute; left: 0; right: 0; height: 30px; z-index: 2; pointer-events: none; }
+  .reel::before { top: 0; background: linear-gradient(var(--card), rgba(23,17,12,0)); }
+  .reel::after { bottom: 0; background: linear-gradient(rgba(23,17,12,0), var(--card)); }
+  .strip { will-change: transform; }
+  .strip div { height: 96px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 16px;
+    font: 700 34px/1 "Oswald", "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; letter-spacing: .01em; white-space: nowrap; }
+  .strip div.hit { color: var(--or2); }
+  .pin { position: absolute; top: 50%; width: 14px; height: 14px; background: var(--or); z-index: 3; transform: translateY(-50%) rotate(45deg); }
+  .pin.l { left: -7px; } .pin.r { right: -7px; }
+
+  .spin { width: 100%; border: 0; border-radius: 18px; padding: 20px; background: var(--or); color: var(--dark); cursor: pointer;
+    font: 700 22px/1 "Oswald", "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; letter-spacing: .02em;
+    box-shadow: 0 14px 40px rgba(238,127,49,.28); transition: transform .12s, filter .2s; }
+  .spin:active { transform: scale(.98); }
+  .spin[disabled] { filter: saturate(.5) brightness(.8); cursor: default; }
+
+  /* результат */
+  .result { border-radius: 24px; overflow: hidden; background: var(--card); border: 1.5px solid var(--line);
+    opacity: 0; transform: translateY(16px); transition: opacity .45s, transform .45s; }
+  .result.show { opacity: 1; transform: none; }
+  .result[hidden] { display: none; }
+  .ph { position: relative; aspect-ratio: 4 / 3; background: #000; }
+  .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ph .cuis { position: absolute; left: 14px; bottom: 14px; background: rgba(11,9,7,.78); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    font-size: 14px; font-weight: 600; padding: 7px 11px; border-radius: 999px; }
+  .body { padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .k { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--or2); }
+  .corner { font: 700 30px/1 "Oswald", "Helvetica Neue", Arial, sans-serif; text-transform: uppercase; margin-top: 6px; }
+  .dish { font-size: 21px; font-weight: 700; line-height: 1.25; margin-top: 8px; }
+  .sweet { display: flex; gap: 12px; align-items: center; padding-top: 14px; border-top: 1px solid var(--line); }
+  .sweet img { width: 58px; height: 58px; border-radius: 14px; object-fit: cover; flex: none; }
+  .sweet b { display: block; font-size: 16px; } .sweet span { color: var(--dim); font-size: 15px; }
+  .row { display: flex; gap: 10px; }
+  .ghost { flex: 1; text-align: center; text-decoration: none; border-radius: 14px; padding: 14px 10px; font: 700 15px/1.1 inherit; font-family: inherit;
+    color: var(--ink); background: transparent; border: 1.5px solid var(--line); cursor: pointer; }
+  .note { color: var(--dim); font-size: 14px; }
+
+  footer { color: var(--dim); font-size: 14px; line-height: 1.5; border-top: 1px solid var(--line); padding-top: 18px; }
+  footer a { color: var(--ink); font-weight: 700; }
+  .tg { display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; background: var(--ink); color: var(--dark);
+    border-radius: 16px; padding: 16px; font-weight: 700; font-size: 16px; }
+  .tg svg { width: 22px; height: 22px; }
+
+  @media (prefers-reduced-motion: reduce) { .result { transition: none; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <img src="img/logo-cream.webp" alt="Фудхолл «Дружба Парк»" width="112" height="54">
+    <span class="tag" id="today">ужин на сегодня</span>
+  </header>
+
+  <div>
+    <h1>Что на ужин? <span>Крутим!</span></h1>
+  </div>
+  <p class="lead">18 кухонь под одной крышей, а решать некогда. Нажмите кнопку — рулетка выберет корнер, блюдо и десерт.</p>
+
+  <div class="moods" role="group" aria-label="Чего хочется">
+    <button type="button" data-mood="any" aria-pressed="true">Любое</button>
+    <button type="button" data-mood="soup" aria-pressed="false">🍜 Суп</button>
+    <button type="button" data-mood="meat" aria-pressed="false">🥩 Мясо</button>
+    <button type="button" data-mood="dough" aria-pressed="false">🍕 Тесто</button>
+    <button type="button" data-mood="asia" aria-pressed="false">🥢 Азия</button>
+  </div>
+
+  <div class="reel" aria-hidden="true"><i class="pin l"></i><i class="pin r"></i><div class="strip" id="strip"></div></div>
+  <button class="spin" id="spin" type="button">Крутить рулетку</button>
+
+  <section class="result" id="result" hidden aria-live="polite">
+    <div class="ph"><img id="rImg" alt=""><span class="cuis" id="rCuis"></span></div>
+    <div class="body">
+      <div>
+        <div class="k">Сегодня ужинаете в</div>
+        <div class="corner" id="rCorner"></div>
+        <div class="dish" id="rDish"></div>
+      </div>
+      <div class="sweet">
+        <img id="sImg" alt="">
+        <div><b id="sDish"></b><span id="sCorner"></span></div>
+      </div>
+      <div class="row">
+        <button class="ghost" id="again" type="button">↻ Ещё раз</button>
+        <button class="ghost" id="share" type="button">Отправить другу</button>
+      </div>
+      <p class="note">Меню и наличие блюд уточняйте у стойки корнера.</p>
+    </div>
+  </section>
+
+  <a class="tg" href="https://t.me/druzhba_park" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3z"/></svg>
+    Афиша и новости — в нашем Telegram
+  </a>
+
+  <footer>
+    <b style="color:var(--ink)">Фудхолл «Дружба Парк»</b><br>
+    2 этаж Technopark Plaza, просп. Андропова, 10, м. Технопарк
+  </footer>
+</main>
+
+<script>
+// Блюда — только из описаний корнеров (сайт и база СММ-бота). Цен и часов работы нет намеренно.
+const MAINS = [
+  { c: 'NGON', cuis: 'Вьетнам', img: 'ngon', tags: ['soup', 'asia'], d: ['Фо — вьетнамский суп с лапшой'] },
+  { c: 'KURKUMA', cuis: 'Индия', img: 'kurkuma', tags: ['meat', 'asia', 'dough'], d: ['Курица из печи тандури', 'Лепёшки с сыром из печи тандури'] },
+  { c: 'RICCI PIZZA', cuis: 'Пицца', img: 'ricci-pizza', tags: ['dough'], d: ['Пицца «Пеперони и рикотта»', 'Пицца «Креветки и цукини в мятном масле»', 'Пицца «Мясная барбекю»'] },
+  { c: 'FAT BURGERS', cuis: 'Бургеры и стейки', img: 'fat-burgers', tags: ['meat'], d: ['Французский бургер с чеддером и розмариновым соусом', 'Швейцарский бургер с жареными шампиньонами', 'Стейк из премиальной говядины'] },
+  { c: 'HANAMI', cuis: 'Япония', img: 'hanami', tags: ['asia'], d: ['Японская кухня — выберите у стойки то, что откликнется'] },
+  { c: 'ЕМЕЛЯ', cuis: 'Русская кухня', img: 'emelya', tags: ['meat'], d: ['Жаркое из щёчек', 'Котлеты из щуки и винегрет'] },
+  { c: 'KULT KEBAB', cuis: 'Турция', img: 'kult-kebab', tags: ['meat'], d: ['Рваная говядина с лепёшкой и рисом', 'Донер с рваной говядиной на тарелке'] },
+  { c: 'КИТАЙ', cuis: 'Домашняя китайская еда', img: 'kitai', tags: ['soup', 'asia'], d: ['Столетний «белый суп»'] },
+  { c: 'POKE&TOMYUM', cuis: 'Поке и том ям', img: 'poke-tomyum', tags: ['soup', 'asia'], d: ['Том ям', 'Гавайский поке'] },
+  { c: 'ГИРО-ГИРОС', cuis: 'Греция', img: 'giro-giros', tags: ['meat', 'dough'], d: ['Гирос в пите с овощами и тцадзики'] },
+  { c: 'СОЧНЫЙ ВЕРТЕЛ', cuis: 'Шаурма', img: 'sochny-vertel', tags: ['meat', 'dough'], d: ['Шаурма — начинку и соус выбираете сами'] },
+  { c: 'BANI', cuis: 'Пицца и паста', img: 'bani', tags: ['dough'], d: ['Неаполитанская пицца 23 см', 'Карбонара на сливках'] },
+];
+const SWEETS = [
+  { c: 'CINNABON', img: 'cinnabon', d: 'Булочка с корицей' },
+  { c: 'MOSDESSERT’S', img: 'mosdesserts', d: 'Десерт в стаканчике' },
+];
+
+const $ = id => document.getElementById(id);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const H = 96;
+let mood = 'any', busy = false, last = null, current = null;
+
+// предзагрузка фото, чтобы результат появлялся сразу
+[...MAINS, ...SWEETS].forEach(m => { const i = new Image(); i.src = `img/c-${m.img}.webp`; });
+
+const strip = $('strip');
+function fillStrip(names, hitIdx) {
+  strip.style.transition = 'none';
+  strip.style.transform = 'translateY(0)';
+  strip.innerHTML = names.map((n, i) => `<div${i === hitIdx ? ' class="hit"' : ''}>${n}</div>`).join('');
+}
+fillStrip(['Дружба Парк'], -1);
+
+document.querySelectorAll('.moods button').forEach(b => b.addEventListener('click', () => {
+  mood = b.dataset.mood;
+  document.querySelectorAll('.moods button').forEach(x => x.setAttribute('aria-pressed', x === b));
+}));
+
+function spin() {
+  if (busy) return;
+  busy = true; $('spin').disabled = true;
+  const pool = MAINS.filter(m => mood === 'any' || m.tags.includes(mood));
+  let main = pick(pool);
+  if (pool.length > 1) while (main === last) main = pick(pool);
+  last = main;
+  const res = { main, dish: pick(main.d), sweet: pick(SWEETS) };
+
+  const n = reduce ? 1 : 26;
+  const names = [];
+  for (let i = 0; i < n; i++) names.push(pick(MAINS).c);
+  names.push(main.c);
+  fillStrip(names, names.length - 1);
+  strip.getBoundingClientRect();
+  strip.style.transition = reduce ? 'none' : 'transform 2.6s cubic-bezier(.12,.72,.14,1)';
+  strip.style.transform = `translateY(${-(names.length - 1) * H}px)`;
+
+  const r = $('result');
+  r.classList.remove('show');
+  if (navigator.vibrate && !reduce) navigator.vibrate(12);
+  setTimeout(() => show(res), reduce ? 0 : 2650);
+}
+
+function show(res) {
+  current = res;
+  $('rImg').src = `img/c-${res.main.img}.webp`;
+  $('rImg').alt = `Блюдо корнера ${res.main.c}`;
+  $('rCuis').textContent = res.main.cuis;
+  $('rCorner').textContent = res.main.c;
+  $('rDish').textContent = res.dish;
+  $('sImg').src = `img/c-${res.sweet.img}.webp`;
+  $('sImg').alt = `Десерт ${res.sweet.c}`;
+  $('sDish').textContent = 'На сладкое: ' + res.sweet.d.toLowerCase();
+  $('sCorner').textContent = res.sweet.c;
+  const r = $('result');
+  r.hidden = false;
+  requestAnimationFrame(() => r.classList.add('show'));
+  if (navigator.vibrate && !reduce) navigator.vibrate([20, 40, 20]);
+  setTimeout(() => r.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }), 200);
+  busy = false; $('spin').disabled = false;
+  $('spin').textContent = 'Крутить ещё';
+}
+
+$('spin').addEventListener('click', spin);
+$('again').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); spin(); });
+$('share').addEventListener('click', async () => {
+  if (!current) return;
+  const text = `Рулетка выбрала нам ужин: ${current.dish} в ${current.main.c}, на сладкое — ${current.sweet.d.toLowerCase()} из ${current.sweet.c}. Фудхолл «Дружба Парк», м. Технопарк. Крутите сами:`;
+  const url = location.href.split('#')[0];
+  try {
+    if (navigator.share) { await navigator.share({ text, url }); return; }
+    await navigator.clipboard.writeText(`${text} ${url}`);
+    $('share').textContent = 'Скопировано ✓';
+    setTimeout(() => $('share').textContent = 'Отправить другу', 1800);
+  } catch (e) { /* пользователь закрыл окно — ничего не делаем */ }
+});
+</script>
+</body>
+</html>
