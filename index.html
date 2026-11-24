@@ -123,11 +123,6 @@
   /* салют из еды */
   .boom { position: fixed; left: 0; top: 0; font-size: 28px; pointer-events: none; z-index: 10; will-change: transform, opacity; }
 
-  @media (prefers-reduced-motion: reduce) {
-    .result, .in, h1 span, .tag, .spin.idle, .float i, .reel.spinning .strip, .reel.spinning .pin, .reel.won, .reel.won .hit,
-    .result.show .ph img, .result.show .cuis, .result.show .body > *, .moods button { animation: none !important; transition: none !important; opacity: 1; transform: none; }
-    .float { display: none; }
-  }
 </style>
 </head>
 <body>
@@ -208,7 +203,7 @@ const SWEETS = [
 
 const $ = id => document.getElementById(id);
 const pick = a => a[Math.floor(Math.random() * a.length)];
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduce = false; // анимации показываем всем, даже при «Уменьшении движения»
 const H = 96;
 let mood = 'any', busy = false, last = null, current = null;
 
