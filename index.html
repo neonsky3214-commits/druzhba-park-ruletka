@@ -83,22 +83,67 @@
     border-radius: 16px; padding: 16px; font-weight: 700; font-size: 16px; }
   .tg svg { width: 22px; height: 22px; }
 
-  @media (prefers-reduced-motion: reduce) { .result { transition: none; } }
+  /* ---- анимации ---- */
+  /* появление страницы лесенкой */
+  .in { opacity: 0; transform: translateY(18px); animation: rise .7s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i, 0) * 90ms + 80ms); }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  h1 span { display: inline-block; animation: wob 3.6s ease-in-out 1.2s infinite; transform-origin: 10% 80%; }
+  @keyframes wob { 0%, 82%, 100% { transform: rotate(0); } 86% { transform: rotate(-4deg) scale(1.04); } 92% { transform: rotate(3deg); } }
+  .tag { animation: sway 4s ease-in-out infinite; }
+  @keyframes sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(1.5deg) translateY(-2px); } }
+  /* плавающая еда на фоне */
+  .float { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .float i { position: absolute; font-style: normal; opacity: .13; filter: saturate(.6); animation: drift linear infinite; }
+  @keyframes drift { from { transform: translateY(110vh) rotate(0); } to { transform: translateY(-20vh) rotate(360deg); } }
+  .wrap { position: relative; z-index: 1; }
+  /* чипы: пружинка при выборе */
+  .moods button[aria-pressed="true"] { animation: pop .35s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes pop { 0% { transform: scale(.88); } 100% { transform: scale(1); } }
+  /* кнопка: дышит, пока не нажали */
+  .spin.idle { animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { box-shadow: 0 14px 40px rgba(238,127,49,.28); } 50% { box-shadow: 0 14px 56px rgba(238,127,49,.55), 0 0 0 6px rgba(238,127,49,.12); } }
+  .spin.in.idle { animation: rise .7s cubic-bezier(.2,.8,.2,1) calc(var(--i) * 90ms + 80ms) forwards, breathe 2.4s ease-in-out 1.4s infinite; }
+  /* барабан во время прокрутки */
+  .reel.spinning .strip { animation: blur 2.6s linear forwards; }
+  @keyframes blur { 0% { filter: blur(0); } 12% { filter: blur(2.5px); } 62% { filter: blur(1.5px); } 85%, 100% { filter: blur(0); } }
+  .reel.spinning .pin { animation: blink .18s steps(2) infinite; }
+  @keyframes blink { 50% { background: var(--ink); } }
+  .reel.won { animation: glow 1s ease-out; }
+  @keyframes glow { 0% { border-color: var(--or); box-shadow: 0 0 0 0 rgba(238,127,49,.6); } 100% { border-color: var(--line); box-shadow: 0 0 0 18px rgba(238,127,49,0); } }
+  .reel.won .hit { animation: land .5s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes land { 0% { transform: scale(.8); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  /* результат */
+  .result.show .ph img { animation: zoomin 1.4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes zoomin { from { transform: scale(1.18); filter: brightness(.4); } to { transform: none; filter: none; } }
+  .result.show .cuis { animation: rise .5s .35s both; }
+  .result.show .body > * { animation: rise .55s cubic-bezier(.2,.8,.2,1) both; }
+  .result.show .body > *:nth-child(2) { animation-delay: .15s; }
+  .result.show .body > *:nth-child(3) { animation-delay: .25s; }
+  .result.show .body > *:nth-child(4) { animation-delay: .32s; }
+  /* салют из еды */
+  .boom { position: fixed; left: 0; top: 0; font-size: 28px; pointer-events: none; z-index: 10; will-change: transform, opacity; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .result, .in, h1 span, .tag, .spin.idle, .float i, .reel.spinning .strip, .reel.spinning .pin, .reel.won, .reel.won .hit,
+    .result.show .ph img, .result.show .cuis, .result.show .body > *, .moods button { animation: none !important; transition: none !important; opacity: 1; transform: none; }
+    .float { display: none; }
+  }
 </style>
 </head>
 <body>
+<div class="float" id="float" aria-hidden="true"></div>
 <main class="wrap">
-  <header>
+  <header class="in" style="--i:0">
     <img src="img/logo-cream.webp" alt="Фудхолл «Дружба Парк»" width="112" height="54">
     <span class="tag" id="today">ужин на сегодня</span>
   </header>
 
-  <div>
+  <div class="in" style="--i:1">
     <h1>Что на ужин? <span>Крутим!</span></h1>
   </div>
-  <p class="lead">18 кухонь под одной крышей, а решать некогда. Нажмите кнопку — рулетка выберет корнер, блюдо и десерт.</p>
+  <p class="lead in" style="--i:2">18 кухонь под одной крышей, а решать некогда. Нажмите кнопку — рулетка выберет корнер, блюдо и десерт.</p>
 
-  <div class="moods" role="group" aria-label="Чего хочется">
+  <div class="moods in" style="--i:3" role="group" aria-label="Чего хочется">
     <button type="button" data-mood="any" aria-pressed="true">Любое</button>
     <button type="button" data-mood="soup" aria-pressed="false">🍜 Суп</button>
     <button type="button" data-mood="meat" aria-pressed="false">🥩 Мясо</button>
@@ -106,8 +151,8 @@
     <button type="button" data-mood="asia" aria-pressed="false">🥢 Азия</button>
   </div>
 
-  <div class="reel" aria-hidden="true"><i class="pin l"></i><i class="pin r"></i><div class="strip" id="strip"></div></div>
-  <button class="spin" id="spin" type="button">Крутить рулетку</button>
+  <div class="reel in" style="--i:4" id="reel" aria-hidden="true"><i class="pin l"></i><i class="pin r"></i><div class="strip" id="strip"></div></div>
+  <button class="spin idle in" style="--i:5" id="spin" type="button">Крутить рулетку</button>
 
   <section class="result" id="result" hidden aria-live="polite">
     <div class="ph"><img id="rImg" alt=""><span class="cuis" id="rCuis"></span></div>
@@ -129,12 +174,12 @@
     </div>
   </section>
 
-  <a class="tg" href="https://t.me/druzhba_park" target="_blank" rel="noopener">
+  <a class="tg in" style="--i:6" href="https://t.me/druzhba_park" target="_blank" rel="noopener">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2l-11 6.9-4.7-1.5c-1-.3-1-1 .2-1.5L20.6 3c.9-.3 1.6.2 1.3 1.3z"/></svg>
     Афиша и новости — в нашем Telegram
   </a>
 
-  <footer>
+  <footer class="in" style="--i:7">
     <b style="color:var(--ink)">Фудхолл «Дружба Парк»</b><br>
     2 этаж Technopark Plaza, просп. Андропова, 10, м. Технопарк
   </footer>
@@ -178,6 +223,42 @@ function fillStrip(names, hitIdx) {
 }
 fillStrip(['Дружба Парк'], -1);
 
+// плавающая еда на фоне
+const FOOD = ['🍜', '🍔', '🍕', '🥟', '🌯', '🍣', '🍲', '🥙', '🍰', '🥐', '🫓', '🥗'];
+if (!reduce) {
+  const fl = $('float');
+  for (let i = 0; i < 12; i++) {
+    const e = document.createElement('i');
+    e.textContent = FOOD[i % FOOD.length];
+    e.style.left = (i * 8.3 + Math.random() * 5) + '%';
+    e.style.fontSize = (22 + Math.random() * 26) + 'px';
+    e.style.animationDuration = (18 + Math.random() * 16) + 's';
+    e.style.animationDelay = -(Math.random() * 30) + 's';
+    fl.appendChild(e);
+  }
+}
+// салют из еды из центра барабана
+function boom() {
+  if (reduce) return;
+  const r = $('reel').getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  for (let i = 0; i < 22; i++) {
+    const e = document.createElement('span');
+    e.className = 'boom';
+    e.textContent = FOOD[Math.floor(Math.random() * FOOD.length)];
+    document.body.appendChild(e);
+    const ang = -Math.PI / 2 + (Math.random() - .5) * Math.PI * 1.3;
+    const v = 140 + Math.random() * 200;
+    const dx = Math.cos(ang) * v, dy = Math.sin(ang) * v;
+    const rot = (Math.random() - .5) * 720;
+    e.animate([
+      { transform: `translate(${cx - 14}px,${cy - 14}px) scale(.3) rotate(0)`, opacity: 1 },
+      { transform: `translate(${cx - 14 + dx}px,${cy - 14 + dy}px) scale(1.1) rotate(${rot / 2}deg)`, opacity: 1, offset: .45 },
+      { transform: `translate(${cx - 14 + dx * 1.3}px,${cy - 14 + dy + 260}px) scale(.9) rotate(${rot}deg)`, opacity: 0 }
+    ], { duration: 1300 + Math.random() * 500, easing: 'cubic-bezier(.2,.7,.4,1)' }).onfinish = () => e.remove();
+  }
+}
+
 document.querySelectorAll('.moods button').forEach(b => b.addEventListener('click', () => {
   mood = b.dataset.mood;
   document.querySelectorAll('.moods button').forEach(x => x.setAttribute('aria-pressed', x === b));
@@ -203,12 +284,22 @@ function spin() {
 
   const r = $('result');
   r.classList.remove('show');
+  const reel = $('reel');
+  reel.classList.remove('won', 'in');
+  reel.style.opacity = 1;
+  reel.classList.add('spinning');
+  $('spin').classList.remove('idle');
   if (navigator.vibrate && !reduce) navigator.vibrate(12);
   setTimeout(() => show(res), reduce ? 0 : 2650);
 }
 
 function show(res) {
   current = res;
+  const reel = $('reel');
+  reel.classList.remove('spinning');
+  void reel.offsetWidth;
+  reel.classList.add('won');
+  boom();
   $('rImg').src = `img/c-${res.main.img}.webp`;
   $('rImg').alt = `Блюдо корнера ${res.main.c}`;
   $('rCuis').textContent = res.main.cuis;
